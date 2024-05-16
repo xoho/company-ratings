@@ -1,0 +1,53 @@
+{% extends "generate/base.html" %}
+
+{% block content %}
+<div class="landing-background">
+    <div class="landing-title">
+        <h1>Social-Credit Ratings</h1>
+        <h2>Honoring Trust with Every Flight</h2>
+        <h3>
+            Dive deep into the Social Credit Mutual Benefit Syndicate,
+            where your contributions take wing, and relationships
+            hold the essence of timeless trust and credit.
+        </h3>
+    </div>
+</div>
+
+<div class="grid-container">
+    <div class="cta-container">
+        <a class="dark-link" href="{{url_for('main.profile')}}">
+            <span>Login or signup</span>
+            <img src="scale.png" alt="Signup or login">
+        </a>
+    </div>
+    <div class="cta-container">
+        <a class="dark-link" href="handles.html">
+            <span>Access the Anti-social credit list</span>
+            <img src="warn-antisocial_credit.png" alt="Anti-social credit List">
+        </a>
+    </div>
+    
+</div>
+
+<div class="about-container">
+    <div>
+        <img class="about-img" src="socialcredit.jpeg" alt="Social-Credit">
+    </div>
+    <div>
+        <h2>About Social-Credit Ratings</h2>
+        <p>
+            At the heart of the Social Credit Mutual Benefit Syndicate lies
+            a vision to acknowledge and honor contributions. These
+            valued deeds and offerings can be seamlessly converted
+            into our signature Falcoin, based on an exchange rate
+            determined by a bird-centric equivalent of the Federal
+            Reserve, governed by transparent policy objectives.
+            Central to this mechanism is our ratings system,
+            predominantly gauging the depth of our relationship with
+            you. It's a nod to the timeless essence of trust and credit.
+        </p>
+    </div>
+</div>
+
+
+{% endblock %}

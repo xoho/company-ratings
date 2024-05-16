@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set is_admin = "Admins" in session['groups'] %}
+{% set can_edit = (profile.name and profile.name==session['username']) or is_admin %}
+{% set return_url=url_for('main.profile', username=profile.username|url_quote) if profile|is_user else url_for('main.profile_organization', name=profile.name|url_quote) %}
+{% set pii_note="This information cannot be viewed by other users."%}
+<div class="profile">
+    {% if is_admin and profile.name and profile.name!=session['username'] %}
+    <div class="warning">Admin view of {{profile|profile_type}} {{profile.name}}</div>
+    {% endif %}
+    <div class="profile-header">
+        <p class="profile-name">{%if profile.is_blocked%}🚫{%endif%}{% if profile|is_user%}{%if profile.is_premium_user%}⭐{%else%}⚠️👤{%endif%}{%else%}🏢{%endif%} {{profile.name}}</p>
+        {% if profile.social_rating %}
+        <p class="profile-description">
+            Social Credit score: {{profile.social_rating}}
+        </p>
+        {% endif %}
+        {% if profile.antisocial_rating %}
+        <p class="profile-description">
+            Anti-social credit score: {{profile.antisocial_rating}}
+        </p>
+        {% endif %}    
+        {% if profile.tags %}
+        <div>
+            Tags: 
+            {% for tag in profile.tags %}
+            <span class="tag">{{tag}}</span>
+            {% endfor %}
+        </div>
+        {% endif %}            
+        <p class="profile-description">
+            {% if is_admin and profile.name!=session['username'] %}
+            <div>
+                <a 
+                    class="dark-link small-link" 
+                    style="margin-left:1em;" 
+                    href="{{url_for('main.profile_rating_change', profile_name=profile.name|url_quote, profile_type=profile|profile_type)}}">
+                        Change score
+                </a>
+            </div>
+            {% endif %}
+
+
+        </p>
+    </div>
+    <div class="tabs">
+        {% if profile|is_org %}
+        <button class="tab active" onclick="openTab(event, 'Organization')">Organization</button>
+        {% endif %}
+        <button class="tab {% if profile|is_user%}active{%endif%}" onclick="openTab(event, 'Social Media')">Social Media</button>
+        {% if can_edit and profile|is_user %}
+        <button class="tab" onclick="openTab(event, 'Personal')">Personal</button>
+        {%endif%}
+        {% if can_edit or not profile|is_user %}
+        <button class="tab" onclick="openTab(event, 'Location')">Location</button>
+        <button class="tab" onclick="openTab(event, 'Email')">Email</button>
+        <button class="tab" onclick="openTab(event, 'Phone')">Phone</button>
+        <button class="tab" onclick="openTab(event, 'Score History')">Score History</button>
+        {% endif %}
+        
+    </div>
+
+
+    {% if can_edit and profile|is_user %}
+    <div id="Personal" class="tab-content" style="display:none">
+        <h2>Personal</h2>
+        {% if not is_contact %}<div class="note">{{pii_note}}</div>{% endif %}
+        <button class="small-button with-bottom-margin" onclick="window.location.href='{{url_for('main.profile_personal', username=profile_name|url_quote)}}'">Update</button>
+
+        <table class="details">
+            <tr>
+                <td class="field-name">name</td>
+                <td class="field-value">{{profile.name}}</td>
+            </tr>
+            {% for k,v in profile.__dict__.items() if k not in ['name', 'uid', 'groups', 'tags', 'raw_data', 'social_media_accounts', 'physical_addresses', 'email_addresses', 'telephone_numbers', 'change_events', 'tags', 'social_rating', 'antisocial_rating'] %}
+            {% if v %}
+            <tr>
+                <td class="field-name">{{k}}</td>
+                <td class="field-value">{{v}}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            {% if profile.groups %}
+            <tr>
+                <td class="field-name">groups</td>
+                <td class="field-value">
+                    {% for group in profile.groups %}
+                    <span>{{group}}</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endif %}
+            {% if system_tags %}
+            <tr>
+                <td class="field-name">
+                    tags
+                    {% if is_admin %}<button class="small-button with-bottom-margin" onclick="window.location.href='{{url_for('main.profile_tags', profile_type=profile|profile_type, profile_name=profile.name|url_quote)}}'">Add tag</button>{%endif%}
+                </td>
+                <td>
+                    {% for tag in profile.tags %}
+                    <span class="tag">
+                        {{tag}}
+                        {% if is_admin%}
+                        <span class="divider"></span>
+                        <a class="remove-button" href="{{url_for('main.profile_tags_delete', profile_name=profile.name|url_quote, profile_type=profile|profile_type, tag=tag)}}">X</a>
+                        {%endif%}
+                    </span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    {%endif%}
+    {% if profile|is_org %}
+    <div id="Organization" class="tab-content" style="display:none">
+        <h2>Organization</h2>
+        
+        <table class="details">
+            <tr>
+                <td class="field-name">name</td>
+                <td class="field-value">{{profile.name}}</td>
+            </tr>
+            <tr>
+                <td class="field-name">profile type</td>
+                <td class="field-value">{{profile.profile_type}}</td>
+            </tr>
+            {% if profile.raw_data %}
+            <tr>
+                <td class="field-name">details</td>
+                <td class="field-value">{{profile.raw_data|pretty_json}}</td>
+            </tr>           
+            {% endif %}
+        </table>
+    </div>
+    {%endif%}
+
+
+    <div id="Social Media" class="tab-content">
+        <h2>Social Media</h2>
+        {% if can_edit %}
+        <button
+            class="small-button with-bottom-margin" 
+            onclick="window.location.href='{{url_for('main.profile_social_media', profile_type=profile|profile_type, profile_name=profile.name|url_quote)}}'"
+            >Add</button>
+        {% endif %}
+        {% if profile.social_media_accounts %}
+        <table class="details">
+            <thead>
+                <th>Platform</th>
+                <th>Handle</th>
+                {% if can_edit %}<th>Action</th>{%endif%}
+            </thead>
+            {% for sma in profile.social_media_accounts|sort(attribute="handle") %}
+            <tr>
+                <td class="field-name centered">{{sma.platform}}</td>
+                <td class="field-value centered">{{sma.handle}}</td>
+                {% if can_edit %}
+                <td class="field-value">
+                    <a class="dark-link small-link" href="{{url_for('main.profile_social_media', profile_type=profile|profile_type, profile_name=profile.name|url_quote, platform=sma.platform, handle=sma.handle)}}">Edit</a>
+                    <a class="dark-link small-link" href="{{url_for('main.profile_social_media_delete', profile_type=profile|profile_type, profile_name=profile.name|url_quote, platform=sma.platform, handle=sma.handle)}}">Delete</a>
+                </td>
+                {%endif%}
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+
+    {% if can_edit or not profile|is_user %}
+    <div id="Location" class="tab-content" style="display:none">
+        <h2>Location</h2>
+        {% if profile|is_user %}
+        <div class="note">{{pii_note}}</div>
+        {% endif %}
+        {% if is_admin or can_edit %}
+        <button class="small-button with-bottom-margin" onclick="window.location.href='{{url_for('main.profile_locations', profile_type=profile|profile_type, profile_name=profile.name|url_quote)}}'">Add</button>
+        {%endif%}
+
+        {% for entry in profile.physical_addresses|sort(attribute=("street1")) %}
+        <div class="entry-title-container">
+            <span class="entry-title">{{entry.street1}}</span>
+            {% if can_edit %}
+            <a class="small-link" href="{{url_for('main.profile_locations', profile_type=profile|profile_type, profile_name=profile.name|url_quote, hash=entry.signature)}}">Edit</a>
+            <a class="small-link" href="{{url_for('main.profile_locations_delete', profile_type=profile|profile_type, profile_name=profile.name|url_quote, hash=entry.signature)}}">Delete</a>
+            {% endif %}
+        </div>  
+
+        <table class="details">
+            {{entry.__dict__|pretty_json}}
+
+        </table>        
+        {% endfor %}
+    </div>
+
+    <div id="Email" class="tab-content" style="display:none">
+        <h2>Email</h2>
+        {% if profile|is_user %}
+        <div class="note">{{pii_note}}</div>
+        {% endif %}
+        {% if is_admin or can_edit %}
+        <button class="small-button with-bottom-margin"
+            onclick="window.location.href='{{url_for('main.profile_emails', profile_type=profile|profile_type, profile_name=profile.name|url_quote)}}'">Add</button>
+        {%endif%}
+        {% if profile.email_addresses%}
+        <table class="details">
+            <thead>
+                <th>Email</th>
+                <th>Default</th>
+                {% if can_edit %}
+                <th>Action</th>
+                {% endif %}
+            </thead>
+            {% for entry in profile.email_addresses|sort(attribute=("email")) %}
+            <tr>
+                <td class="field-name">{{entry.email}}</td>
+                <td class="field-value centered">{% if entry.is_default%}✅{%endif%}</td>
+                {% if can_edit %}
+                <td class="field-value">
+                    <a class="dark-link small-link" href="{{url_for('main.profile_emails', profile_type=profile|profile_type, profile_name=profile.name|url_quote, email=entry.email|url_quote)}}">Edit</a>
+                    <a class="dark-link small-link" href="{{url_for('main.profile_emails_delete', profile_type=profile|profile_type, profile_name=profile.name|url_quote, email=entry.email|url_quote)}}">Delete</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>        
+        {% endif %}
+
+    </div>
+
+    <div id="Phone" class="tab-content" style="display:none">
+        <h2>Phone</h2>
+        {% if profile|is_user %}
+        <div class="note">{{pii_note}}</div>
+        {% endif %}
+        {% if is_admin or can_edit %}
+        <button class="small-button with-bottom-margin" onclick="window.location.href='{{url_for('main.profile_telephone_numbers', profile_type=profile|profile_type, profile_name=profile.name|url_quote)}}'">Add</button>
+        {%endif%}
+
+        {% if profile.telephone_numbers %}
+        <table class="details">
+            <thead>
+                <th>Telephone</th>
+                <th>Default</th>
+                {% if can_edit %}
+                <th>Action</th>
+                {% endif %}
+            </thead>
+            {% for entry in profile.telephone_numbers|sort(attribute=("phone")) %}
+            <tr>
+                <td class="field-name">{{entry.phone}}</td>
+                <td class="field-value centered">{% if entry.is_default%}✅{%endif%}</td>
+                {% if can_edit %}
+                <td class="field-value">
+                    <a class="dark-link small-link" href="{{url_for('main.profile_telephone_numbers', profile_type=profile|profile_type, profile_name=profile.name|url_quote, hash=entry.signature)}}">Edit</a>
+                    <a class="dark-link small-link" href="{{url_for('main.profile_telephone_numbers_delete', profile_type=profile|profile_type, profile_name=profile.name|url_quote, hash=entry.signature)}}">Delete</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>        
+        {% endif %}
+
+    </div>
+
+    <div id="Score History" class="tab-content" style="display:none">
+        <h2>Score History</h2>
+        {% if profile|is_user %}
+        <div class="note">{{pii_note}}</div>
+        {%endif%}
+
+        {% if is_admin and session['username']!=profile.name%}
+        <button class="small-button with-bottom-margin" onclick="window.location.href='{{url_for('main.profile_rating_change', profile_type=profile|profile_type, profile_name=profile.name|url_quote )}}'">Update</button>
+        {% endif %}
+        {% if profile.change_events %}
+        <table class="details">
+            <thead>
+                <th>Date</th>
+                <th>Score change</th>
+                <th>Change type</th>
+                <th>Changed by</th>
+                <th>Comment</th>
+            </thead>
+            {% for change in profile.change_events|sort(attribute='change_date', reverse=True) %}
+            <tr>
+                <td class="field-value">{{change.change_date|just_date}}</td>
+                <td class="field-value">{{change.social_rating_change+change.antisocial_rating_change}}</td>
+                <td class="field-value">{% if change.social_rating_change>0%}Social Credit{%else%}Anti-social credit{%endif%}</td>
+                <td class="field-value">{{change.changed_by_user}}</td>
+                <td class="field-value">{{change.change}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {%endif%}
+
+    </div>
+    {% endif %}
+
+</div>
+
+{% include 'common/tabmenu.html'%}
+
+
+{% endblock %}

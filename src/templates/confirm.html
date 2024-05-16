@@ -1,0 +1,15 @@
+{% extends "base.html"%}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="profile">
+    <h1>Confirm {{action}}</h1>
+    <p>{{ message }}</p>
+    
+    <form action="" method="POST">
+        {{form.csrf_token}}
+        {{form.confirm}}
+    </form>
+</div>  
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% set return_url=url_for('main.profile', username=profile.name|url_quote) if profile|is_user else url_for('main.profile_organization', name=profile.name|url_quote) %}
+<div class="profile">
+    <div class="profile-header">
+        {% if is_admin and profile.name and profile.name!=session['username'] %}
+        <div class="warning">Editing {{profile_type}} {{profile_name}} - <a href="{{return_url}}">see changes</a></div>
+        {% endif %}
+        <button class="small-button back-button" onclick="window.location.href='{{return_url}}'">Back</button>
+        <h2>{{update_verb}} {{update_type|title}} information for {{profile.name}}</h2>
+    </div>
+
+    <div class="form-update">
+        <form class="form" action="" method="POST">
+            {{form.csrf_token}}
+            <div class="form-fields">
+                <table class="form-details">
+                {% for field in form %}
+                    <tr>
+                        {% if field.type!='CSRFTokenField' %}
+                        <td class="field-name">{{field.label}}</td>
+                        <td class="field-value">{{field(class="error" if field.errors else "")}}</td>
+                        {%if field.errors%}<span class="error-detail">{{field.errors|join(',')}}{%endif%}</span></td>
+                        {%endif%}
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>
+            <br/>
+            <p><input type="submit" value="{{update_verb}}"></p>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

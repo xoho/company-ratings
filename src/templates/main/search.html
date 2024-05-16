@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <div class="profile-header">
+        <h2>Search for users and organizations</h2>
+        <!-- search form -->
+        <form action="" method="GET">
+                <div class="search-div">
+                    <input type="text" name="q" placeholder="Search for a user or org" value="{{request.args.get('q', '')}}">
+                    <button class="search" type="submit">Search</button>
+                    <img src="{{url_for('static', filename='img/spinning-hourglass-small.gif')}}" alt="search icon" id="search-icon" style="display:none;width:15px;">
+                </div>
+        </form>
+    </div>
+    <div classs="search-results">
+        {% set query_params = {'q': request.args.get('q')} %}
+        <div id="Results" class="tab-content">
+            <h3>Users - count: {{user_count}}</h3>
+            {% if user_count>0 %}
+            <span><a class="dark-link" href="{{url_for('main.search_entity', entity_type='user', **query_params)}}">See all results</a></span>
+            {% endif %}
+            <br/>
+            <h3>Organizations - count: {{org_count}}</h3>
+            {% if org_count>0 %}
+            <span><a class="dark-link search" href="{{url_for('main.search_entity', entity_type='organization', **query_params)}}">See all results</a></span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("search-icon").style.display = "none";
+
+    document.querySelectorAll(".search").forEach(function(element){
+        element.addEventListener("click", function(){
+            document.getElementById("search-icon").style.display =  "inline";
+        });
+    });
+
+</script>
+
+{% endblock %}

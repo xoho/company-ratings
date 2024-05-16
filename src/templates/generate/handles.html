@@ -1,0 +1,47 @@
+{% extends "generate/base.html" %}
+
+{% block content %}
+<div class="profile">
+    <div class="profile-header">
+        <h1>Anti-social credit List</h1>
+        <div class="dark-link" style="margin-bottom:1em;font-size: smaller;">
+            <span >Last updated at {{now}} (UTC)</span>
+        </div>
+        {% if data %}
+        <div>
+            <a class="dark-link"  href="handles.json">json</a>&nbsp;<a class="dark-link"  href="handles.csv">csv</a>
+        </div>
+        {% endif %}
+
+        
+    </div>
+    <div class="disclaimer">
+        <p>
+            NOTE: This list is merely a guiding list of handles of which you
+            should consider carefully with your online interactions. This list
+            in no way guarantees the safety of your online interactions and 
+            should not be used as a substitute for your own judgement. Handles
+            on this list are publically available and are not considered 
+            private information. There is no ill-will conveyed by the
+            inclusion of a handle on this list. If you have a handle on this 
+            list and would like it removed, please contact us at admin @ ordopremium_userum.org. 
+        </p>
+    </div>
+    <div>
+        {% if data %}
+        {% for platform, handles in data.items() %}
+        <div class="platform">
+            <h2>{{platform}}</h2>
+            {% for handle in handles %}
+            <p class="field-value">{{handle}}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        {% else %}
+        No handles found.
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

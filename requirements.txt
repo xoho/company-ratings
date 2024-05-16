@@ -1,0 +1,17 @@
+Flask==2.*
+gunicorn==20.*
+Werkzeug==2.*
+Flask-WTF==1.*
+WTForms==3.*
+pydantic==1.*
+Requests==2.*
+Authlib==1.*
+Flask-SQLAlchemy==3.*
+Flask-Testing==0.*
+Flask-Migrate==4.*
+arrow==1.*
+pytest==7.*
+psycopg2-binary==2.*
+email-validator==2.0.0.post2
+Flask-JWT-Extended==4.*
+boto3>=1.34.*

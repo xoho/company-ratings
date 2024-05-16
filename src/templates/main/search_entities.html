@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <div class="profile-header">
+        <h2>Search for {{entity_type}}</h2>
+        <!-- search form -->
+        <form action="" method="GET">
+                <div class="search">
+                    <input type="text" name="q" placeholder="Search for {{entity_type}}" value="{{request.args.get('q')}}">
+                    <button id="search" type="submit">Search</button>
+                    <img src="{{url_for('static', filename='img/spinning-hourglass-small.gif')}}" alt="search icon" class="search-icon" style="display:none;width:15px;">
+                    <span class="smaller" id="search-results">({{pagination.total}} records in {{duration}} seconds)</span>
+                </div>
+        </form>
+    </div>
+    <div classs="search-results">
+        {% if pagination %}
+        <div id="Results" class="tab-content">
+            <h2>{{entity_type|title}}s</h2>
+            <h3>Total results: {{pagination.total}}</h3>
+            <table class="search-results-table">
+                <thead>
+                    <th style="width:{%if entity_type=='user'%}15{%else%}70{%endif%}%;text-align: left;">Name</th>
+                    <th style="text-align: left;">Profiles</th>
+                </thead>
+                {% for profile in pagination.items %}
+                <tr class="search-row-{% if loop.index0 % 2%}light{%else%}dark{%endif%}">
+                    {% if profile|is_user %}
+                    <td class="field-name">
+                        <a class="dark-link" href="{{url_for('main.profile', username=profile.name|url_quote)}}">
+                            {{profile.name}}
+                        </a>
+                    </td>
+                    {%else%}
+                    <td class="field-name">
+                        <a class="dark-link" href="{{url_for('main.profile_organization', name=profile.name)}}">
+                            {{profile.name}}
+                        </a>
+                    </td>
+                    {% endif %}
+                    <td class="field-value social-media-account">
+                        {% if profile.social_media_accounts %}
+                        {% for sma in profile.social_media_accounts[0:3]%}
+                        {{sma.platform.name}}:{{sma.handle}}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                        {% if profile.social_media_accounts|length > 3 %} and {{profile.social_media_accounts|length - 3 }} more {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            <!--pagination controls-->
+            <div class="pagination">
+                {% if pagination.has_prev %}
+                    <a class="dark-link" href="{{ url_for('main.search_entity', entity_type=entity_type, page=pagination.prev_num, q=q, per_page=per_page) }}">Previous</a>
+                {% endif %}
+                {% if pagination.has_next %}
+                    <a class="dark-link" href="{{ url_for('main.search_entity', entity_type=entity_type, page=pagination.next_num, q=q, per_page=per_page) }}">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    document.getElementsByClassName("search-icon")[0].style.display = "none";
+    document.getElementById("search").addEventListener("click", function(){
+        document.getElementsByClassName("search-icon")[0].style.display = "inline";
+        document.getElementById("search-results").innerHTML = "";
+    });
+</script>
+{% endblock %}

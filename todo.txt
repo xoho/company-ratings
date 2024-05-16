@@ -1,0 +1,81 @@
+[x] - admin: impersonate a user
+[x] - admin: set login_required
+[x] - user: modify profile
+[x] - user: view profile
+[x] - user: switch to rating score
+[x] - increment score on first login
+[x] - add login link to main page
+[x] - better form error handling
+[x] - admin: user management
+[x] - admin: rating levels management
+[x] - add social
+[x] - add email
+[x] - add physical address
+[x] - admin: add "user count with this rating" to ratings page
+[x] - add a user
+[x] - reduce to set on search
+[x] - paginate search
+[x] - dump negative scores to csv, json, txt, xml once/hour
+[x] - antisocial_credits page
+[x] - non-auth landing
+[x] - flatten migrations
+[x] - test with postgres
+[x] - more route tests
+[x] - index username, social media, org name, org dba
+[x] - add telephone_number
+[x] - remove antisocial_credit list
+[x] - block list
+[x] - comment on PII sections about not showing up in search results
+
+[x] - add tag to model
+[x] - add tag to search
+[x] - jwt auth for api
+[x] - add contacts to org
+[x] - include contacts in search
+[x] - data import api
+[x] - PPP model and reporting (different category for antisocial_credits)
+[x] - add user api
+[x] - fix JWT expiry
+[x] - fix autoflush error
+[ ] - add/remove tag to user
+[ ] - promote/demote user to admin
+[x] - add word indexing
+
+
+
+[ ] - admin: group management
+[ ] - admin: all change history
+[ ] - admin: view by rating level
+
+
+1231176 words
+
+
+workflow for approvals
+show tasks to complete
+task management
+
+
+bug run
+
+[x] http://localhost:5000/profile/personal/ - AttributeError: 'UserProfile' object has no attribute 'created_at'
+[x] update personal is not saving
+[x] don't let admin change their own admin
+[x] http://localhost:5000/profile/locations/user/user1/b7844a7828163a4f69ab1fcc477b65bb6c35a1cbc9f9658b818e036f78f480a7 - edit does not bring in data
+[x] http://localhost:5000/profile/username/user1 - default switch does not remove default of others
+[x] phone edit/delete not working
+[x] Score History - don't show "update" button when on own page
+[x] use local fs for cache instead of redis
+[x] admin pages
+[ ] restore api pages
+
+
+Features
+[ ] tags to include things like premium_user club
+[ ] add search for tags
+[ ] when user logs in, if they have manually created user with same email or username, it gets updated to sso user
+[ ] figure out fuzzy logic for data matching
+
+data
+[ ] LC listings
+[ ] premium_user club

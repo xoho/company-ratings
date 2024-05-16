@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile">
+    <div class="profile-header">
+        <p class="profile-name">Admin Actions</p>
+    </div>
+    <div class="tabs">
+        <button class="tab active" onclick="openTab(event, 'Users')">Users</button>
+        <button class="tab" onclick="openTab(event, 'Organizations')">Organizations</button>
+        <button class="tab" onclick="openTab(event, 'Tags')">Tags</button>
+        <!-- <button class="tab" onclick="openTab(event, 'Access Tokens')">Access Tokens</button> -->
+    </div>
+
+    <div id="Users" class="tab-content">
+        <h2>Admins</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.make_admin')}}'">Make a user Admin</button>
+
+        <table class="details">
+            <thead>
+                <th>Username</th>
+                <th>Last login</th>
+                <th>Action</th>
+            </thead>
+            {% for user in admins %}
+            <tr>
+                <td class="field-name centered">{{user.name}}</td>
+                <td class="field-value centered">{{user.last_login|short_datetime}}</td>
+                <td class="field-value centered">
+                    <a class="dark-link small-link" href="{{url_for('main.profile_personal', name=user.name|url_quote)}}">Edit</a>
+                    {% if session['username'] != user.name %}
+                    <a class="dark-link small-link" href="{{url_for('admin.remove_admin', name=user.name|url_quote)}}">Remove</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Manually added users</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.edit_user')}}'">Manually Add User</button>
+        {% if manually_added_users %}
+        <table class="details">
+            <thead>
+                <th>Username</th>
+                <th>Is Social Credit?</th>
+                <th>Action</th>
+            </thead>
+            {% for user in manually_added_users %}
+            <tr>
+                <td class="field-value centered"><a class="dark-link" href="{{url_for('main.profile', username=user.name|url_quote)}}">{{user.name}}</a></td>
+                <td class="field-value centered">{{user.is_premium_user}}</td>
+                <td>
+                    <a class="dark-link small-link" href="{{url_for('main.profile', username=user.name)}}">Edit</a>
+                    <a class="dark-link small-link" href="{{url_for('admin.delete_user', name=user.name)}}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {%else%}
+        <div style="margin-top:1em;">There are no manually added users</div>
+        {% endif %}
+
+        <h2>Blocked Usernames</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.add_blocked_name')}}'">Add Blocked Username</button>
+        {% if blocked_users %}
+        <table class="details">
+            <thead>
+                <th>Username</th>
+                <th>Reason</th>
+                <th>Action</th>
+            </thead>
+            {% for user in blocked_users %}
+            <tr>
+                <td class="field-value centered"><a class="dark-link" href="{{url_for('main.profile', username=user.name|url_quote)}}">{{user.name}}</a></td>
+                <td class="field-value centered">{{user.block_reason}}</td>
+                <td>
+                    <a class="dark-link small-link" href="{{url_for('admin.unblock_user', name=user.name)}}">Unblock</a>
+                </td>
+            </tr>
+            {% endfor %} 
+        </table>
+        {% endif %}
+
+    </div>
+
+    <div id="Organizations" class="tab-content">
+        <h2>Manage</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.edit_organization')}}'">Manually Add Organization</button>
+        <p>Count of organizations: {{organization_count}}</p>
+    </div>
+
+
+    <div id="Tags" class="tab-content">
+        <h2>Current tags</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.add_tag')}}'">Add Tag</button>
+        {% if tags %}
+        <table class="details">
+            <thead>
+                <th>Tag</th>
+                <th>Description</th>
+                <th># of profiles with tag</th>
+                <th>Action</th>
+            </thead>
+            {% for tag in tags %}
+            <tr>
+                <td class="field-value centered">{{tag.name}}</td>
+                <td class="field-value centered">{{tag.description}}</td>
+                <td class="field-value centered">{{tag.profiles|length}}</td>
+                <td>
+                    {% if tag.profiles|length ==0 %}
+                    <a class="dark-link small-link" href="{{url_for('admin.delete_tag', name=tag.name)}}">Delete</a>
+                    {% else %}
+                    <a class="dark-link small-link" href="{{url_for('admin.show_tag', name=tag.name)}}">Show users with this tag</a>
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+    
+    <div id="Access Tokens" class="tab-content">
+        <h2>Access Tokens</h2>
+        <button class="small-button" onclick="window.location.href='{{url_for('admin.add_access_token')}}'">Add Access Token</button>
+        {% if access_tokens %}
+        <table class="detail">
+            <thead>
+                <th>Token</th>
+                <th>Access type</th>
+                <th>User since</th>
+                <th>Created by</th>
+                <th>Expires at</th>
+                <th>Comment</th>
+                <th>Action</th>
+            </thead>
+            {% for token in access_tokens %}
+            <tr>
+                <td class="field-value centered"><button onclick="showModal('{{token.token}}')">Show</button><span>{{token.token[:20]}}...</span></td>
+                <td class="field-value centered">{{token.access_type}}</td>
+                <td class="field-value centered">{{token.user_since|just_date}}</td>
+                <td class="field-value centered">{{token.created_by_user.name}}</td>
+                <td class="field-value centered">{{token.expiration_datetime}}</td>
+                <td class="field-value centered">{{token.comment}}</td>
+                <td>
+                    <a class="dark-link small-link" href="{{url_for('admin.delete_access_token', id=token.id)}}">Delete</a>
+                </td>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>No access tokens found.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+{% include 'common/tabmenu.html'%}
+<div id="myModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <p id="modalData">Your variable data here</p>
+      <button id="copyBtn">Copy</button>
+      <button id="closeBtn">Close</button>
+    </div>
+</div>
+
+<script>
+    function showModal(data) {
+        document.getElementById('modalData').innerText = data;
+        document.getElementById('myModal').style.display = 'block';
+    };
+
+    document.getElementById('closeBtn').addEventListener('click', function() {
+        document.getElementById('myModal').style.display = 'none';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+        // Copy data to clipboard
+        const textToCopy = document.getElementById('modalData').innerText;
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+    
+        // Close the modal
+        document.getElementById('myModal').style.display = 'none';
+    });
+</script>
+{% endblock %}

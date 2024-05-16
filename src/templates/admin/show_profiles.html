@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile">
+    <div class="profile-header">
+        <h2>Show {{data_type}} information for {{data_target}}</h2>
+    </div>
+
+    <div>
+        <ul>
+        {% for profile in profiles %}
+        <li>
+            <a class="dark-link" href="{{url_for('main.profile', username=profile.name|url_quote)}}">{{profile.name}}</a>
+        </li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
